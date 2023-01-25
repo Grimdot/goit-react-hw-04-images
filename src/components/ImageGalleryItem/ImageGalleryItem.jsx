@@ -1,6 +1,7 @@
 import Modal from 'components/Modal/Modal';
 import { GalleryItem, GalleryItemImg } from './ImageGalleryItem.styled';
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 export default class ImageGalleryItem extends Component {
   state = {
@@ -32,3 +33,10 @@ export default class ImageGalleryItem extends Component {
     );
   }
 }
+
+ImageGalleryItem.propTypes = {
+  id: PropTypes.number,
+  tags: PropTypes.string,
+  webformatURL: PropTypes.string,
+  largeImageURL: PropTypes.string,
+};

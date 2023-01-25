@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import { Backdrop, ModalImage, ModalWindow } from './Modal.styled';
 
 const modalRoot = document.querySelector('#modal-root');
@@ -39,3 +39,7 @@ export default class Modal extends Component {
     );
   }
 }
+
+Modal.propTypes = {
+  largeImageURL: PropTypes.string,
+};
