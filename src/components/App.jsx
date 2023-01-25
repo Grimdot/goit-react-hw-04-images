@@ -33,7 +33,7 @@ export default class App extends Component {
   async componentDidUpdate(prevProps, prevState) {
     const { searchQuery, currentPage } = this.state;
 
-    if (prevState.query !== searchQuery) {
+    if (prevState.searchQuery !== searchQuery) {
       this.setStatus('pending');
 
       try {
@@ -55,7 +55,10 @@ export default class App extends Component {
       }
     }
 
-    if (prevState.query === searchQuery && prevState.page !== currentPage) {
+    if (
+      prevState.searchQuery === searchQuery &&
+      prevState.currentPage !== currentPage
+    ) {
       this.setStatus('pending');
 
       try {
