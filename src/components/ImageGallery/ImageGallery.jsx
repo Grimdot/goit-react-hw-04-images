@@ -14,14 +14,21 @@ export default class ImageGallery extends Component {
 
     if (prevProps.query !== query) {
       setStatus('pending');
-      const response = await fetchGallery(query, page);
 
-      if (response.data.totalHits > 0) {
-        this.setState({ gallery: [...response.data.hits] });
+      try {
+        const response = await fetchGallery(query, page);
 
-        setStatus('resolved');
-      } else {
-        Notiflix.Notify.info('There is nothing here with that name');
+        if (response.data.totalHits > 0) {
+          this.setState({ gallery: [...response.data.hits] });
+
+          setStatus('resolved');
+        } else {
+          Notiflix.Notify.info('There is nothing here with that name');
+
+          setStatus('rejected');
+        }
+      } catch (error) {
+        Notiflix.Notify.failure('Something went wrong');
 
         setStatus('rejected');
       }
@@ -29,13 +36,20 @@ export default class ImageGallery extends Component {
 
     if (prevProps.query === query && prevProps.page !== page) {
       setStatus('pending');
-      const response = await fetchGallery(query, page);
 
-      this.setState(prevState => {
-        return { gallery: [...prevState.gallery, ...response.data.hits] };
-      });
+      try {
+        const response = await fetchGallery(query, page);
 
-      setStatus('resolved');
+        this.setState(prevState => {
+          return { gallery: [...prevState.gallery, ...response.data.hits] };
+        });
+
+        setStatus('resolved');
+      } catch (error) {
+        Notiflix.Notify.failure('Something went wrong');
+
+        setStatus('rejected');
+      }
     }
   }
 

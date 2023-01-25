@@ -9,5 +9,6 @@ export const Gallery = styled.ul`
 
   margin: 0;
   margin-top: 70px;
+  margin-bottom: 30px;
   padding: 0;
 `;
