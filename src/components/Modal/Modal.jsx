@@ -19,11 +19,11 @@ export default class Modal extends Component {
   };
 
   componentDidMount() {
-    document.body.addEventListener('keydown', this.modalCloseOnEsc);
+    window.addEventListener('keydown', this.modalCloseOnEsc);
   }
 
   componentWillUnmount() {
-    document.body.removeEventListener('keydown', this.modalCloseOnEsc);
+    window.removeEventListener('keydown', this.modalCloseOnEsc);
   }
 
   render() {

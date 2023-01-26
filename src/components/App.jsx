@@ -10,12 +10,9 @@ export default class App extends Component {
   state = {
     searchQuery: '',
     currentPage: 1,
-    status: 'idle',
     gallery: [],
-  };
-
-  setStatus = statusName => {
-    this.setState({ status: statusName });
+    showBtn: false,
+    showLoader: false,
   };
 
   searchQueryUpdate = newSearchQuery => {
@@ -34,8 +31,6 @@ export default class App extends Component {
     });
   };
 
-  showBtn = false;
-
   async componentDidUpdate(prevProps, prevState) {
     const { searchQuery, currentPage } = this.state;
 
@@ -43,33 +38,32 @@ export default class App extends Component {
       prevState.searchQuery !== searchQuery ||
       prevState.currentPage !== currentPage
     ) {
-      this.setStatus('pending');
+      this.setState({ showBtn: false, showLoader: true });
 
       try {
         const response = await fetchGallery(searchQuery, currentPage);
 
         if (response.data.totalHits > 0) {
           this.setState(prevState => {
-            return { gallery: [...prevState.gallery, ...response.data.hits] };
+            return {
+              gallery: [...prevState.gallery, ...response.data.hits],
+              showBtn: currentPage < Math.ceil(response.data.totalHits / 12),
+            };
           });
-
-          this.showBtn = currentPage < Math.ceil(response.data.totalHits / 12);
-          this.setStatus('resolved');
         } else {
-          Notiflix.Notify.info('There is nothing here with that name');
-
-          this.setStatus('rejected');
+          Notiflix.Notify.info('There is nothing here with that name.');
         }
       } catch (error) {
-        Notiflix.Notify.failure('Something went wrong');
-
-        this.setStatus('rejected');
+        Notiflix.Notify.failure(`Something went wrong.`);
+      } finally {
+        this.setState({ showLoader: false });
       }
     }
   }
 
   render() {
-    const { searchQuery, currentPage, status, gallery } = this.state;
+    const { searchQuery, currentPage, showLoader, gallery, showBtn } =
+      this.state;
 
     return (
       <>
@@ -78,14 +72,12 @@ export default class App extends Component {
         <ImageGallery
           query={searchQuery}
           page={currentPage}
-          setStatus={this.setStatus}
           galleryItems={gallery}
         />
 
-        {status === 'resolved' && this.showBtn && (
-          <Button currentPageUpdate={this.currentPageUpdate} />
-        )}
-        {status === 'pending' && <Loader />}
+        {showBtn && <Button currentPageUpdate={this.currentPageUpdate} />}
+
+        {showLoader && <Loader />}
       </>
     );
   }
