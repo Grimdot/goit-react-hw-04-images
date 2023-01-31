@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Button from './Button/Button';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
@@ -6,79 +6,67 @@ import Searchbar from './Searchbar/Searchbar';
 import Notiflix from 'notiflix';
 import { fetchGallery } from 'services/pixabay-service';
 
-export default class App extends Component {
-  state = {
-    searchQuery: '',
-    currentPage: 1,
-    gallery: [],
-    showBtn: false,
-    showLoader: false,
-  };
+const App = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [gallery, setGallery] = useState([]);
+  const [showBtn, setShowBtn] = useState(false);
+  const [showLoader, setShowLoader] = useState(false);
 
-  searchQueryUpdate = newSearchQuery => {
+  const searchQueryUpdate = newSearchQuery => {
     const normalizedSearchQuery = newSearchQuery.toLowerCase().trim();
 
-    this.setState({
-      searchQuery: normalizedSearchQuery,
-      currentPage: 1,
-      gallery: [],
-    });
+    setSearchQuery(normalizedSearchQuery);
+    setCurrentPage(1);
+    setGallery([]);
   };
 
-  currentPageUpdate = () => {
-    this.setState(prevState => {
-      return { currentPage: prevState.currentPage + 1 };
-    });
+  const currentPageUpdate = () => {
+    setCurrentPage(prevState => prevState + 1);
   };
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { searchQuery, currentPage } = this.state;
-
-    if (
-      prevState.searchQuery !== searchQuery ||
-      prevState.currentPage !== currentPage
-    ) {
-      this.setState({ showBtn: false, showLoader: true });
-
+  useEffect(() => {
+    const updateGalleryState = async () => {
       try {
+        setShowLoader(true);
+        setShowBtn(false);
         const response = await fetchGallery(searchQuery, currentPage);
 
         if (response.data.totalHits > 0) {
-          this.setState(prevState => {
-            return {
-              gallery: [...prevState.gallery, ...response.data.hits],
-              showBtn: currentPage < Math.ceil(response.data.totalHits / 12),
-            };
+          setGallery(prevState => {
+            return [...prevState, ...response.data.hits];
           });
+          setShowBtn(currentPage < Math.ceil(response.data.totalHits / 12));
         } else {
           Notiflix.Notify.info('There is nothing here with that name.');
         }
       } catch (error) {
         Notiflix.Notify.failure(`Something went wrong.`);
       } finally {
-        this.setState({ showLoader: false });
+        setShowLoader(false);
       }
+    };
+
+    if (searchQuery) {
+      updateGalleryState();
     }
-  }
+  }, [searchQuery, currentPage]);
 
-  render() {
-    const { searchQuery, currentPage, showLoader, gallery, showBtn } =
-      this.state;
+  return (
+    <>
+      <Searchbar searchQueryUpdate={searchQueryUpdate} />
 
-    return (
-      <>
-        <Searchbar searchQueryUpdate={this.searchQueryUpdate} />
+      <ImageGallery
+        query={searchQuery}
+        page={currentPage}
+        galleryItems={gallery}
+      />
 
-        <ImageGallery
-          query={searchQuery}
-          page={currentPage}
-          galleryItems={gallery}
-        />
+      {showBtn && <Button currentPageUpdate={currentPageUpdate} />}
 
-        {showBtn && <Button currentPageUpdate={this.currentPageUpdate} />}
+      {showLoader && <Loader />}
+    </>
+  );
+};
 
-        {showLoader && <Loader />}
-      </>
-    );
-  }
-}
+export default App;
